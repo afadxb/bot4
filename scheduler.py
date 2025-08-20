@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, time
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from loguru import logger
 
@@ -16,7 +16,11 @@ class Scheduler:
     """Simple scheduler that decides when to run primary logic."""
 
     def __init__(self, tz: str | ZoneInfo = settings.timezone) -> None:
-        self.tz = ZoneInfo(str(tz))
+        try:
+            self.tz = ZoneInfo(str(tz))
+        except ZoneInfoNotFoundError:
+            logger.warning("Timezone %s not found; falling back to UTC", tz)
+            self.tz = ZoneInfo("UTC")
         self.last_primary: datetime | None = None
 
     def is_primary_time(self, now: datetime) -> bool:

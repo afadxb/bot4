@@ -24,7 +24,8 @@ def load_universe() -> Sequence[str]:
     if source in {"static", "file"}:
         if not file_path.exists():
             raise FileNotFoundError(file_path)
-        symbols = [line.strip() for line in file_path.read_text().splitlines()[1:] if line.strip()]
+        text = file_path.read_text(encoding="utf-8")
+        symbols = [line.strip() for line in text.splitlines()[1:] if line.strip()]
         logger.debug("Loaded symbols", count=len(symbols))
         return symbols
 

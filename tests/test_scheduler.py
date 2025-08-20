@@ -5,6 +5,11 @@ from zoneinfo import ZoneInfo
 from scheduler import Scheduler
 
 
+def test_scheduler_fallback_timezone():
+    sched = Scheduler(tz="Mars/Phobos")
+    assert str(sched.tz) == "UTC"
+
+
 def test_scheduler_runs_on_4h_close_once():
     tz = ZoneInfo("America/New_York")
     sched = Scheduler(tz="America/New_York")
