@@ -1,4 +1,9 @@
-"""Main entry point wiring components together."""
+"""Command-line entry point for the adaptive S&P 100 bot.
+
+The module wires together the scheduler, universe loader and sentiment
+checks. It is intentionally light, delegating real work to the
+specialised submodules.
+"""
 
 from __future__ import annotations
 
@@ -6,10 +11,10 @@ from datetime import datetime
 
 from loguru import logger
 
-from .config import settings
-from .scheduler import Scheduler
-from .universe import load_universe
-from .scoring import sentiment
+from config import settings
+from scheduler import Scheduler
+from universe import load_universe
+from scoring import sentiment
 
 
 def main() -> None:  # pragma: no cover - runtime entry

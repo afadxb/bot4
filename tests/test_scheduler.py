@@ -2,7 +2,7 @@ import sys, pathlib; sys.path.append(str(pathlib.Path(__file__).resolve().parent
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from src.scheduler import Scheduler
+from scheduler import Scheduler
 
 
 def test_scheduler_runs_on_4h_close_once():

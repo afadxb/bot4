@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Sequence
 
-from .config import settings
+from config import settings
 
 
 def load_universe() -> Sequence[str]:

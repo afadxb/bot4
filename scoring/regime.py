@@ -6,7 +6,7 @@ from typing import Literal
 
 import pandas as pd
 
-from ..config import settings
+from config import settings
 
 
 def detect_regime(spy_df_4h: pd.DataFrame, vix: float) -> Literal["TR", "RG", "RO"]:

@@ -7,7 +7,7 @@ from zoneinfo import ZoneInfo
 
 from loguru import logger
 
-from .config import settings
+from config import settings
 
 FOUR_HOUR_BOUNDARIES = [time(10), time(14), time(18), time(22)]
 

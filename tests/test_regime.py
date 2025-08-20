@@ -1,7 +1,7 @@
 import sys, pathlib; sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
 import pandas as pd
 
-from src.scoring.regime import detect_regime
+from scoring.regime import detect_regime
 
 
 def make_df(close: float, sma50: float, sma200: float, adx: float, n: int = 25):
