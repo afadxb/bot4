@@ -18,6 +18,7 @@ from scoring import sentiment
 
 
 def main() -> None:  # pragma: no cover - runtime entry
+    logger.debug("Starting bot run")
     scheduler = Scheduler()
     universe = load_universe()
     logger.info("Loaded universe", count=len(universe))
