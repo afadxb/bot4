@@ -10,8 +10,6 @@ import importlib
 import sys
 from pathlib import Path
 
-import streamlit as st
-
 
 def _import_real_pandas():
     """Import the actual pandas package, bypassing the local test stub."""
@@ -30,6 +28,8 @@ def _import_real_pandas():
 
 pd = _import_real_pandas()
 
+import streamlit as st
+
 
 def main() -> None:
     """Render the Streamlit dashboard."""
@@ -37,7 +37,7 @@ def main() -> None:
     st.title("Bot Dashboard")
 
     # A) Live status (top ribbon)
-    now = dt.datetime.utcnow()
+    now = dt.datetime.now(dt.UTC)
     next_close = (now + dt.timedelta(hours=4)).replace(minute=0, second=0, microsecond=0)
     countdown = next_close - now
     col1, col2, col3, col4, col5, col6 = st.columns(6)
