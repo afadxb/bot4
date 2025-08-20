@@ -10,5 +10,16 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = []
 
+[tool.setuptools]
+packages = [
+    "alerts",
+    "backtest",
+    "data",
+    "exec",
+    "risk",
+    "scoring",
+    "storage",
+]
+
 [tool.pytest.ini_options]
 addopts = "-q"
