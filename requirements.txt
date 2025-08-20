@@ -10,3 +10,5 @@ requests==2.32.3
 tenacity==8.4.2
 loguru==0.7.2
 tzdata
+
+streamlit==1.39.0
