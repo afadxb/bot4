@@ -8,7 +8,7 @@ replacement for pandas.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, List
+from typing import Any, Dict, Iterable, List, Optional
 
 
 class Series(list):
@@ -22,10 +22,37 @@ class Series(list):
 class DataFrame:
     """Very small subset of :class:`pandas.DataFrame`."""
 
-    def __init__(self, data: Dict[str, Iterable[Any]]):
+    def __init__(
+        self,
+        data: Optional[Dict[str, Iterable[Any]]] = None,
+        columns: Optional[Iterable[str]] = None,
+    ):
+        """Construct a minimal ``DataFrame``.
+
+        Parameters
+        ----------
+        data:
+            Mapping of column names to iterables. If omitted, an empty
+            ``DataFrame`` is created.
+        columns:
+            Optional explicit column order. When provided, missing columns
+            default to empty lists. This mirrors the API used in the real
+            pandas library sufficiently for our tests and dashboard code.
+        """
+
+        if data is None:
+            data = {}
+
+        if columns is None:
+            columns = list(data.keys())
+        else:
+            # Ensure all referenced columns exist in ``data``
+            data = {col: list(data.get(col, [])) for col in columns}
+
         self._data = {k: list(v) for k, v in data.items()}
+        self.columns = list(self._data.keys())
         rows = zip(*self._data.values())
-        self._rows: List[Dict[str, Any]] = [dict(zip(self._data.keys(), r)) for r in rows]
+        self._rows: List[Dict[str, Any]] = [dict(zip(self.columns, r)) for r in rows]
 
     class _ILoc:
         def __init__(self, rows: List[Dict[str, Any]]):
