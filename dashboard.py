@@ -43,7 +43,7 @@ def main() -> None:
     col1, col2, col3, col4, col5, col6 = st.columns(6)
     col1.metric("Bot state", "RUNNING")
     col2.metric("Next 4H close", str(countdown).split(".")[0])
-    col3.metric("Regime", "TR")
+    col3.metric("Regime", "Trending")
     col4.metric("FG Index", "62 · OK")
     col5.metric("Earnings guard", "0 tickers")
     col6.metric("Health", "last run 30s")
