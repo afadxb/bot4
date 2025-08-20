@@ -6,9 +6,28 @@ Implements placeholders for the production-oriented dashboard blueprint.
 from __future__ import annotations
 
 import datetime as dt
+import importlib
+import sys
+from pathlib import Path
 
-import pandas as pd
 import streamlit as st
+
+
+def _import_real_pandas():
+    """Import the actual pandas package, bypassing the local test stub."""
+    repo_dir = Path(__file__).resolve().parent
+    removed = False
+    if sys.path and Path(sys.path[0]).resolve() == repo_dir:
+        sys.path.pop(0)
+        removed = True
+    try:
+        return importlib.import_module("pandas")
+    finally:
+        if removed:
+            sys.path.insert(0, str(repo_dir))
+
+
+pd = _import_real_pandas()
 
 
 def main() -> None:
