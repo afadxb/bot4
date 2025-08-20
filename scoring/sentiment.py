@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Literal
 
+from loguru import logger
+
 
 def get_fear_greed() -> int:
     """Return the Fear & Greed index value.
@@ -12,6 +14,7 @@ def get_fear_greed() -> int:
     real deployment this would call an external API.
     """
 
+    logger.debug("Fetching Fear & Greed index")
     return 50
 
 
@@ -21,4 +24,5 @@ def get_news_sentiment(symbol: str) -> Literal["pos", "neg", "neutral"]:
     Always returns ``"neutral"`` in this stub implementation.
     """
 
+    logger.debug("Fetching news sentiment", symbol=symbol)
     return "neutral"
