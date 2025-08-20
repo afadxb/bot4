@@ -27,6 +27,12 @@ By default the bot loads `sp100.csv`. Update this file to refresh the S&P 100 li
 python -m src.main
 ```
 
+## Dashboard
+
+```bash
+streamlit run src/dashboard.py
+```
+
 ## Backtests
 
 ```
