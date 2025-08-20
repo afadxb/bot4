@@ -16,15 +16,16 @@ import streamlit as st
 def _import_real_pandas():
     """Import the actual pandas package, bypassing the local test stub."""
     repo_dir = Path(__file__).resolve().parent
-    removed = False
-    if sys.path and Path(sys.path[0]).resolve() == repo_dir:
-        sys.path.pop(0)
-        removed = True
+    # Temporarily remove any repo paths so the real pandas takes precedence.
+    original_path = list(sys.path)
+    sys.path = [p for p in sys.path if Path(p or ".").resolve() != repo_dir]
+    # ``streamlit`` may have already imported our local ``pandas`` stub. Ensure
+    # it does not persist in ``sys.modules`` so the real package is loaded.
+    sys.modules.pop("pandas", None)
     try:
         return importlib.import_module("pandas")
     finally:
-        if removed:
-            sys.path.insert(0, str(repo_dir))
+        sys.path = original_path
 
 
 pd = _import_real_pandas()
