@@ -6,6 +6,13 @@ Adaptive, regime-aware trading bot for the S&P 100. The bot scans hourly, scores
 Scan → Score → Sentiment → Support → Order → Manage
 ```
 
+## Components
+
+* `scheduler.py` – schedules hourly runs and 4H tasks
+* `scoring/` – entry, exit and regime scoring logic
+* `risk/` – position sizing and stop helpers
+* `alerts/` – optional push notifications
+
 ## Setup
 
 ```bash
@@ -24,19 +31,19 @@ By default the bot loads `sp100.csv`. Update this file to refresh the S&P 100 li
 ## Running
 
 ```
-python -m src.main
+python -m main
 ```
 
 ## Dashboard
 
 ```bash
-streamlit run src/dashboard.py
+streamlit run dashboard.py
 ```
 
 ## Backtests
 
 ```
-python -m src.backtest.engine
+python -m backtest.engine
 ```
 
 ## Safety

@@ -1,7 +1,7 @@
 import sys, pathlib; sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
 import pandas as pd
 
-from src.scoring.exit_scoring import compute_exit_score
+from scoring.exit_scoring import compute_exit_score
 
 
 def build_h4():

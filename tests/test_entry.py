@@ -1,7 +1,7 @@
 import sys, pathlib; sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
 import pandas as pd
 
-from src.scoring.entry_scoring import compute_entry_score
+from scoring.entry_scoring import compute_entry_score
 
 
 def build_daily(rsi=60, macd_hist=1.0):

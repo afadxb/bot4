@@ -1,0 +1,1 @@
+"""Scoring logic for entries, exits and regime detection."""

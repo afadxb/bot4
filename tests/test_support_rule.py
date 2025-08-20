@@ -1,5 +1,5 @@
 import sys, pathlib; sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
-from src.risk.stops import near_support
+from risk.stops import near_support
 
 
 def test_near_support_by_atr():

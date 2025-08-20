@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ..config import settings
+from config import settings
 
 
 def position_size(equity: float, entry: float, stop: float, risk_per_trade: float | None = None) -> int:

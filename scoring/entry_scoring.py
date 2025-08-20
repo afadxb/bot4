@@ -7,7 +7,7 @@ from typing import Any, Dict, Tuple
 
 import pandas as pd
 
-from ..config import settings
+from config import settings
 
 
 @dataclass
