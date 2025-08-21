@@ -38,7 +38,7 @@ def main() -> None:  # pragma: no cover - runtime entry
                 try:
                     bot.run_cycle(symbol)
                 except Exception:
-                    logger.exception("Error processing symbol", symbol=symbol)
+                    logger.opt(exception=True).error("Error processing symbol", symbol=symbol)
         next_run = scheduler.next_run(now)
         sleep((next_run - now).total_seconds())
 

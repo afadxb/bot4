@@ -21,6 +21,7 @@ dependencies = [
     "tenacity==8.4.2",
     "loguru==0.7.2",
     "tzdata",
+    "yfinance==0.2.40",
     "streamlit==1.39.0",
 ]
 

@@ -39,6 +39,15 @@ class _Logger:
     def error(self, *args, **kwargs) -> None:
         self._log("ERROR", *args, **kwargs)
 
+    def opt(self, *, exception: bool = False):
+        """Return self ignoring ``exception`` flag.
+
+        The real loguru logger allows ``logger.opt(exception=True).error(...)``
+        to include traceback information.  Our stub does not capture
+        tracebacks but provides the method so calling code remains compatible.
+        """
+        return self
+
 
 logger = _Logger()
 
