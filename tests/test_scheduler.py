@@ -1,8 +1,9 @@
 import sys, pathlib; sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from scheduler import Scheduler
+from config import settings
 
 
 def test_scheduler_fallback_timezone():
@@ -20,3 +21,11 @@ def test_scheduler_runs_on_4h_close_once():
     # Non-boundary hour should not trigger
     dt2 = datetime(2024, 1, 1, 15, 0, tzinfo=tz)
     assert sched.should_run_primary(dt2) is False
+
+
+def test_scheduler_next_run_interval():
+    tz = ZoneInfo("America/New_York")
+    sched = Scheduler(tz="America/New_York")
+    now = datetime(2024, 1, 1, 10, 0, tzinfo=tz)
+    expected = now + timedelta(minutes=settings.run_interval_min)
+    assert sched.next_run(now) == expected

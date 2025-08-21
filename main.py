@@ -31,14 +31,14 @@ def main() -> None:  # pragma: no cover - runtime entry
     bot = TradingBot(market_data, broker)
 
     while True:
-        now = datetime.now()
+        now = datetime.now(tz=scheduler.tz)
         if scheduler.should_run_primary(now):
             logger.info("Running cycle", time=str(now))
             for symbol in universe:
                 try:
                     bot.run_cycle(symbol)
                 except Exception:
-                    logger.exception("Error processing symbol", symbol=symbol)
+                    logger.opt(exception=True).error("Error processing symbol", symbol=symbol)
         next_run = scheduler.next_run(now)
         sleep((next_run - now).total_seconds())
 
