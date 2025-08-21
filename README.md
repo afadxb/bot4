@@ -12,13 +12,14 @@ Scan → Score → Sentiment → Support → Order → Manage
 * `scoring/` – entry, exit and regime scoring logic
 * `risk/` – position sizing and stop helpers
 * `alerts/` – optional push notifications
+* `bot.py` – ties data fetching, scoring and order placement together
 
 ## Setup
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -e . -r requirements.txt
+pip install -e .
 cp .env.example .env
 ```
 
@@ -33,6 +34,10 @@ By default the bot loads `sp100.csv`. Update this file to refresh the S&P 100 li
 ```
 python -m main
 ```
+
+This launches the main trading loop. The bot loads the configured
+universe, pulls market data, evaluates entry and exit signals and sends
+orders through the broker stub while tracking position state.
 
 ## Dashboard
 
