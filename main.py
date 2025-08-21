@@ -31,7 +31,7 @@ def main() -> None:  # pragma: no cover - runtime entry
     bot = TradingBot(market_data, broker)
 
     while True:
-        now = datetime.now()
+        now = datetime.now(tz=scheduler.tz)
         if scheduler.should_run_primary(now):
             logger.info("Running cycle", time=str(now))
             for symbol in universe:
