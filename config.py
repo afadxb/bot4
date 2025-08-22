@@ -11,7 +11,21 @@ load_dotenv()
 
 
 def _getenv(name: str, default):
-    return type(default)(os.getenv(name, default))
+    """Read environment variable ``name`` and cast to ``type(default)``.
+
+    ``bool`` values are handled explicitly so that any of ``1``, ``true``,
+    ``yes`` or ``on`` (case-insensitive) evaluate to ``True`` while all other
+    values fall back to ``False``.  This makes it possible to toggle features
+    such as debug logging via environment variables without surprising
+    behaviour from ``bool("false")`` evaluating truthy.
+    """
+
+    value = os.getenv(name)
+    if value is None:
+        return default
+    if isinstance(default, bool):
+        return value.lower() in {"1", "true", "yes", "on"}
+    return type(default)(value)
 
 
 @dataclass(frozen=True)
@@ -62,6 +76,9 @@ class Settings:
 
     db_url: str = _getenv("DB_URL", "sqlite:///./bot.db")
     timezone: str = _getenv("TIMEZONE", "America/New_York")
+
+    # Misc
+    debug: bool = _getenv("DEBUG", False)
 
 
 settings = Settings()

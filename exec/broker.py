@@ -61,14 +61,17 @@ class IBKRBroker(Broker):
         )
         self.ib.connect(settings.ib_host, settings.ib_port, clientId=settings.ib_client_id)
         self.account_id = settings.ib_account_id
+        logger.debug("IBKR connection established")
 
     def place_order(self, order: Order) -> str:  # pragma: no cover - network
         action = order.side.upper()
         contract = Stock(order.symbol, "SMART", "USD")
         if order.price:
             ib_order = LimitOrder(action, order.qty, order.price)
+            logger.debug("Submitting limit order", symbol=order.symbol, qty=order.qty, price=order.price)
         else:
             ib_order = MarketOrder(action, order.qty)
+            logger.debug("Submitting market order", symbol=order.symbol, qty=order.qty)
         trade = self.ib.placeOrder(contract, ib_order)
         logger.info("Placed order", symbol=order.symbol, qty=order.qty, side=order.side)
         return str(trade.order.orderId)
@@ -80,7 +83,9 @@ class IBKRBroker(Broker):
                 not getattr(self, "account_id", None) or row.account == self.account_id
             ):
                 try:
-                    return float(row.value)
+                    value = float(row.value)
+                    logger.debug("Retrieved account balance", value=value)
+                    return value
                 except ValueError:
                     continue
         return 0.0

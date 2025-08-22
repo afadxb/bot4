@@ -23,7 +23,7 @@ pip install -e .
 cp .env.example .env
 ```
 
-Configure the `.env` then launch the Interactive Brokers TWS/Gateway. The default configuration uses SQLite; switch `DB_URL` to a MySQL URL if desired.
+Configure the `.env` then launch the Interactive Brokers TWS/Gateway. The default configuration uses SQLite; switch `DB_URL` to a MySQL URL if desired. Set `DEBUG=1` in the `.env` to enable verbose logging during development.
 
 ## Universe
 

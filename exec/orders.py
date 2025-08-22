@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict
 
+from loguru import logger
 from .broker import Order
 
 
@@ -18,9 +19,17 @@ class BracketOrder:
 
 def build_bracket(symbol: str, qty: int, entry_price: float, stop_price: float, pt1: float, pt2: float) -> BracketOrder:
     """Create a simple bracket order."""
-
     entry = Order(symbol=symbol, qty=qty, side="BUY", price=entry_price)
     stop = Order(symbol=symbol, qty=qty, side="SELL", price=stop_price)
     pt1_o = Order(symbol=symbol, qty=qty // 2, side="SELL", price=pt1)
     pt2_o = Order(symbol=symbol, qty=qty - qty // 2, side="SELL", price=pt2)
+    logger.debug(
+        "Bracket constructed",
+        symbol=symbol,
+        qty=qty,
+        entry=entry_price,
+        stop=stop_price,
+        pt1=pt1,
+        pt2=pt2,
+    )
     return BracketOrder(entry=entry, stop=stop, pt1=pt1_o, pt2=pt2_o)
