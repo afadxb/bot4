@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Protocol
 
 import pandas as pd
@@ -48,12 +48,44 @@ class IBKRMarketData:
     operate on the data directly.
     """
 
-    ib: IB = field(default_factory=IB)  # type: ignore[misc]
+    # ``ib_insync`` is an optional dependency.  When it is not installed the
+    # imported ``IB`` symbol above will be ``None``.  Using ``IB`` directly as a
+    # ``default_factory`` would cause a ``TypeError`` during dataclass
+    # instantiation because ``None`` is not callable.  To keep the class usable
+    # in environments without ``ib_insync`` (the test-suite, documentation
+    # builds, etc.) we store ``None`` by default and lazily create the ``IB``
+    # client in :meth:`__post_init__` when the real library is available.
+    ib: IB | None = None
 
     def __post_init__(self) -> None:  # pragma: no cover - network
         if IB is None:
-            raise RuntimeError("ib_insync is required for IBKRMarketData")
-        self.ib.connect(settings.ib_host, settings.ib_port, clientId=settings.ib_client_id)
+            # ``ib_insync`` is missing – signal to callers that this provider
+            # cannot be used rather than failing with a ``TypeError`` from the
+            # dataclass machinery.
+            raise ImportError("ib_insync is required for IBKRMarketData")
+
+        # When ``ib`` wasn't supplied, create a new client instance now.
+        if self.ib is None:
+            self.ib = IB()
+
+        # Establish the API connection using configured credentials unless we
+        # were given a pre-connected instance.
+        if not self.ib.isConnected():
+            self.ib.connect(
+                settings.ib_host, settings.ib_port, clientId=settings.ib_client_id
+            )
+
+    def close(self) -> None:  # pragma: no cover - network
+        """Disconnect from the IBKR API if connected."""
+        if self.ib and self.ib.isConnected():
+            self.ib.disconnect()
+
+    # Support usage as a context manager to guarantee disconnection.
+    def __enter__(self) -> "IBKRMarketData":
+        return self
+
+    def __exit__(self, exc_type, exc, tb) -> None:
+        self.close()
 
     # -- internal helpers -------------------------------------------------
     def _download(self, symbol: str, duration: str, bar_size: str) -> pd.DataFrame:
