@@ -28,11 +28,14 @@ if "PYTEST_CURRENT_TEST" not in os.environ and "pytest" not in sys.modules:  # p
         if spec and spec.origin and spec.origin != __file__:
             module = importlib.util.module_from_spec(spec)
             assert spec.loader is not None
-            spec.loader.exec_module(module)  # type: ignore[arg-type]
-            globals().update(module.__dict__)
-            sys.modules[__name__] = module
-            break
-
+            try:
+                spec.loader.exec_module(module)  # type: ignore[arg-type]
+            except Exception:  # pragma: no cover - fall back to stub
+                continue
+            else:
+                globals().update(module.__dict__)
+                sys.modules[__name__] = module
+                break
 
 if "DataFrame" not in globals():
 
@@ -70,7 +73,6 @@ if "DataFrame" not in globals():
                 else:
                     result.append(self[i] - self[i - periods])
             return Series(result)
-
 
     class DataFrame:
         """Very small subset of :class:`pandas.DataFrame`."""
