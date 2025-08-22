@@ -202,3 +202,47 @@ class IBKRMarketData:
         """
 
         return "SPY"
+
+
+@dataclass
+class YFinanceMarketData(IBKRMarketData):
+    """Retrieve historical bars from Yahoo Finance.
+
+    This implementation reuses the indicator calculations from
+    :class:`IBKRMarketData` but sources the raw OHLCV data from the public
+    Yahoo Finance API via the :mod:`yfinance` package.  No network connection
+    is established at initialisation time which keeps the class lightweight
+    and easy to stub in tests.
+    """
+
+    def __post_init__(self) -> None:  # pragma: no cover - trivial
+        # The Yahoo Finance backend does not require persistent connections,
+        # so initialisation is effectively a no-op.
+        pass
+
+    # -- internal helpers -------------------------------------------------
+    def _download(self, symbol: str, duration: str, bar_size: str) -> pd.DataFrame:
+        """Download historical bars using :mod:`yfinance`.
+
+        Parameters mirror the signature of :meth:`IBKRMarketData._download` to
+        keep the rest of the application unchanged.  The ``duration`` string is
+        converted to the ``period`` parameter expected by ``yfinance`` and the
+        ``bar_size`` is mapped to the corresponding ``interval``.
+        """
+
+        logger.debug("Downloading bars", symbol=symbol, duration=duration, bar_size=bar_size)
+        import yfinance as yf  # Imported lazily to keep dependency optional
+
+        period = duration.lower().replace(" ", "")  # e.g. "5 D" -> "5d"
+        interval_map = {"1 day": "1d", "1 hour": "1h"}
+        interval = interval_map.get(bar_size, "1d")
+        df = yf.download(symbol, period=period, interval=interval, progress=False)
+        df = df.rename(columns=str.lower)
+        df = df[["open", "high", "low", "close", "volume"]]
+        return df.dropna()
+
+    def get_vix(self) -> float:
+        """Return the latest VIX value using the ``^VIX`` ticker."""
+
+        df = self._download("^VIX", "5 D", "1 day")
+        return float(df["close"].iloc[-1])

@@ -25,6 +25,9 @@ cp .env.example .env
 
 Configure the `.env` then launch the Interactive Brokers TWS/Gateway. The default configuration uses SQLite; switch `DB_URL` to a MySQL URL if desired. Set `DEBUG=1` in the `.env` to enable verbose logging during development.
 
+Market data is retrieved from Yahoo Finance so no additional data service
+credentials are required.
+
 ## Universe
 
 By default the bot loads `sp100.csv`. Update this file to refresh the S&P 100 list.
