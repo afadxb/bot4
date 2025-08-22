@@ -5,6 +5,10 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 def _getenv(name: str, default):
     return type(default)(os.getenv(name, default))
@@ -24,6 +28,7 @@ class Settings:
 
     risk_per_trade: float = _getenv("RISK_PER_TRADE", 0.01)
     max_positions: int = _getenv("MAX_POSITIONS", 5)
+    portfolio_pct: float = _getenv("PORTFOLIO_PCT", 0.1)
 
     entry_threshold: int = _getenv("ENTRY_THRESHOLD", 70)
     watch_threshold: int = _getenv("WATCH_THRESHOLD", 55)
@@ -36,6 +41,17 @@ class Settings:
     regime_vix_tr: float = _getenv("REGIME_VIX_TR", 22.0)
     regime_vix_ro: float = _getenv("REGIME_VIX_RO", 26.0)
     adx_trend: float = _getenv("ADX_TREND", 20.0)
+
+    # Indicator parameters
+    rsi_window: int = _getenv("RSI_WINDOW", 14)
+    supertrend_period: int = _getenv("SUPER_TREND_PERIOD", 10)
+    supertrend_mult: float = _getenv("SUPER_TREND_MULT", 3.0)
+    sma_fast: int = _getenv("SMA_FAST", 50)
+    sma_slow: int = _getenv("SMA_SLOW", 200)
+    sma_exit: int = _getenv("SMA_EXIT", 20)
+    macd_fast: int = _getenv("MACD_FAST", 12)
+    macd_slow: int = _getenv("MACD_SLOW", 26)
+    macd_signal: int = _getenv("MACD_SIGNAL", 9)
 
     sentiment_fg_block: int = _getenv("SENTIMENT_FG_BLOCK", 25)
     sentiment_overheat_rsi: int = _getenv("SENTIMENT_OVERHEAT_RSI", 70)
