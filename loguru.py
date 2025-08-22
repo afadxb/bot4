@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from config import settings
+
 
 class _Logger:
     """Very small subset of the :mod:`loguru` logger API.
@@ -21,6 +23,8 @@ class _Logger:
     """
 
     def _log(self, level: str, *args, **kwargs) -> None:
+        if level == "DEBUG" and not settings.debug:
+            return
         ts = datetime.now().isoformat(timespec="seconds")
         parts = [str(a) for a in args]
         parts.extend(f"{k}={v}" for k, v in kwargs.items())

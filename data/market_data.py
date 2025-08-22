@@ -7,6 +7,7 @@ from typing import Protocol
 
 import pandas as pd
 
+from loguru import logger
 from config import settings
 
 try:  # pragma: no cover - requires ib_insync at runtime
@@ -56,6 +57,7 @@ class IBKRMarketData:
 
     # -- internal helpers -------------------------------------------------
     def _download(self, symbol: str, duration: str, bar_size: str) -> pd.DataFrame:
+        logger.debug("Downloading bars", symbol=symbol, duration=duration, bar_size=bar_size)
         contract = Stock(symbol, "SMART", "USD")
         bars = self.ib.reqHistoricalData(
             contract,
@@ -77,6 +79,7 @@ class IBKRMarketData:
         rest of the application remains unchanged.
         """
 
+        logger.debug("Fetching bars", symbol=symbol, timeframe=tf, lookback=lookback)
         if tf == "D":
             df = self._download(symbol, f"{lookback + settings.sma_slow} D", "1 day")
             df["sma50"] = sma(df["close"], settings.sma_fast)
@@ -141,6 +144,7 @@ class IBKRMarketData:
             df["sma20"] = sma(df["close"], settings.sma_exit)
             df["bearish_pattern"] = False
             return df.tail(lookback)
+        logger.debug("Unsupported timeframe", timeframe=tf)
         raise NotImplementedError
 
     def get_last_close(self, symbol: str) -> float:
