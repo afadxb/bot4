@@ -2,7 +2,7 @@ import sys, pathlib; sys.path.append(str(pathlib.Path(__file__).resolve().parent
 
 import pandas as pd
 
-from bot import TradingBot
+from main import TradingBot
 from exec.broker import Broker, Order
 from exec.state import PositionState
 
@@ -86,6 +86,9 @@ class MockBroker(Broker):
         self.orders.append(order)
         return str(len(self.orders))
 
+    def get_balance(self) -> float:
+        return 10_000.0
+
 
 def test_bot_entry_and_exit_cycle():
     md = FakeMarketData()
@@ -95,9 +98,14 @@ def test_bot_entry_and_exit_cycle():
     bot.run_cycle("AAPL")
     assert ("AAPL", "D", 2) in md.calls and ("AAPL", "4H", 2) in md.calls
     assert len(broker.orders) == 4  # entry + bracket
+    assert broker.orders[0].qty == 9
 
     md.exit_ready = True
     bot.run_cycle("AAPL")
     assert ("AAPL", "1H", 2) in md.calls
     assert len(broker.orders) == 5  # plus exit order
+    assert broker.orders[-1].qty == 9
     assert bot.positions["AAPL"] == PositionState.EXITED
+
+    bot.run_cycle("AAPL")
+    assert len(broker.orders) == 5

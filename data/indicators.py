@@ -43,8 +43,10 @@ def rsi(series: pd.Series, window: int = 14) -> pd.Series:
     return RSIIndicator(close=series, window=window).rsi()
 
 
-def macd(series: pd.Series) -> tuple[pd.Series, pd.Series, pd.Series]:
-    ind = MACD(close=series)
+def macd(
+    series: pd.Series, fast: int = 12, slow: int = 26, signal: int = 9
+) -> tuple[pd.Series, pd.Series, pd.Series]:
+    ind = MACD(close=series, window_fast=fast, window_slow=slow, window_sign=signal)
     return ind.macd(), ind.macd_signal(), ind.macd_diff()
 
 

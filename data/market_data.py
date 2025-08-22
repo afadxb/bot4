@@ -2,15 +2,17 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Protocol
 
 import pandas as pd
-try:  # pragma: no cover - optional dependency
-    import yfinance as yf
-except Exception:  # pragma: no cover - graceful fallback
-    yf = None
 
+from config import settings
+
+try:  # pragma: no cover - requires ib_insync at runtime
+    from ib_insync import IB, Stock, util
+except Exception:  # pragma: no cover - fallback when ib_insync missing
+    IB = Stock = util = None  # type: ignore
 from .indicators import (
     bbands,
     macd,
@@ -36,61 +38,107 @@ class MarketData(Protocol):
 
 @dataclass
 class IBKRMarketData:
-    """Minimal stub using IBKR via ib_insync.
+    """Retrieve historical bars from Interactive Brokers.
 
-    The real implementation would use ``ib_insync``. Here we provide a stub
-    that can be replaced with a fully featured provider.  Rather than raising
-    ``NotImplementedError`` this stub fetches data from ``yfinance`` as a
-    lightweight fallback so the rest of the bot can operate in a demo mode.
-    The returned frames include a handful of commonly used indicator columns
-    which keeps the scoring modules functional.
+    A connection is established on initialisation using credentials from
+    :mod:`config.settings`.  Only a subset of the API is exercised so the
+    implementation remains intentionally small.  The returned frames include
+    a collection of commonly used indicators so the scoring modules can
+    operate on the data directly.
     """
 
-    def _download(self, symbol: str, interval: str, period: str) -> pd.DataFrame:
-        if yf is None:
-            raise RuntimeError("yfinance is required for the IBKRMarketData stub")
-        df = yf.download(symbol, interval=interval, period=period, progress=False)
+    ib: IB = field(default_factory=IB)  # type: ignore[misc]
+
+    def __post_init__(self) -> None:  # pragma: no cover - network
+        if IB is None:
+            raise RuntimeError("ib_insync is required for IBKRMarketData")
+        self.ib.connect(settings.ib_host, settings.ib_port, clientId=settings.ib_client_id)
+
+    # -- internal helpers -------------------------------------------------
+    def _download(self, symbol: str, duration: str, bar_size: str) -> pd.DataFrame:
+        contract = Stock(symbol, "SMART", "USD")
+        bars = self.ib.reqHistoricalData(
+            contract,
+            endDateTime="",
+            durationStr=duration,
+            barSizeSetting=bar_size,
+            whatToShow="TRADES",
+            useRTH=True,
+        )
+        df = util.df(bars)
         df = df.rename(columns=str.lower)
         df = df[["open", "high", "low", "close", "volume"]]
         return df.dropna()
 
     def get_bars(self, symbol: str, tf: str, lookback: int) -> pd.DataFrame:
+        """Fetch price bars and compute indicators for ``symbol``.
+
+        Parameters mirror those of the previous stub implementation so the
+        rest of the application remains unchanged.
+        """
+
         if tf == "D":
-            # fetch extra history to compute long moving averages
-            df = self._download(symbol, "1d", f"{lookback + 200}d")
-            df["sma50"] = sma(df["close"], 50)
-            df["sma200"] = sma(df["close"], 200)
-            df["supertrend"] = supertrend(df)
-            df["rsi"] = rsi(df["close"])
-            macd_line, macd_signal, macd_hist = macd(df["close"])
+            df = self._download(symbol, f"{lookback + settings.sma_slow} D", "1 day")
+            df["sma50"] = sma(df["close"], settings.sma_fast)
+            df["sma200"] = sma(df["close"], settings.sma_slow)
+            df["supertrend"] = supertrend(
+                df,
+                period=settings.supertrend_period,
+                multiplier=settings.supertrend_mult,
+            )
+            df["rsi"] = rsi(df["close"], window=settings.rsi_window)
+            macd_line, macd_signal, macd_hist = macd(
+                df["close"],
+                fast=settings.macd_fast,
+                slow=settings.macd_slow,
+                signal=settings.macd_signal,
+            )
             df["macd_line"] = macd_line
             df["macd_signal"] = macd_signal
             df["macd_hist"] = macd_hist
-            df["avg_vol"] = df["volume"].rolling(20).mean()
+            df["avg_vol"] = df["volume"].rolling(settings.sma_exit).mean()
             df["session_vol"] = df["volume"]
             df["obv_slope"] = obv(df["close"], df["volume"]).diff()
-            lband, _, hband = bbands(df["close"])
+            lband, _, hband = bbands(df["close"], window=settings.sma_exit)
             df["bb_pos"] = (df["close"] - lband) / (hband - lband)
             df["pullback"] = False
             df["extended"] = False
             df["gap_up"] = False
             return df.tail(lookback)
         if tf == "1H":
-            df = self._download(symbol, "1h", "60d")
-            df["supertrend"] = supertrend(df)
-            macd_line, macd_signal, _ = macd(df["close"])
+            df = self._download(symbol, "60 D", "1 hour")
+            df["supertrend"] = supertrend(
+                df,
+                period=settings.supertrend_period,
+                multiplier=settings.supertrend_mult,
+            )
+            macd_line, macd_signal, _ = macd(
+                df["close"],
+                fast=settings.macd_fast,
+                slow=settings.macd_slow,
+                signal=settings.macd_signal,
+            )
             df["macd_line"] = macd_line
             df["macd_signal"] = macd_signal
             return df.tail(lookback)
         if tf == "4H":
-            df_1h = self._download(symbol, "1h", "60d")
+            df_1h = self._download(symbol, "60 D", "1 hour")
             df = rollup_1h_to_4h(df_1h)
-            df["supertrend"] = supertrend(df)
-            df["rsi"] = rsi(df["close"])
-            macd_line, macd_signal, _ = macd(df["close"])
+            df["supertrend"] = supertrend(
+                df,
+                period=settings.supertrend_period,
+                multiplier=settings.supertrend_mult,
+            )
+            df["rsi"] = rsi(df["close"], window=settings.rsi_window)
+            macd_line, macd_signal, _ = macd(
+                df["close"],
+                fast=settings.macd_fast,
+                slow=settings.macd_slow,
+                signal=settings.macd_signal,
+            )
             df["macd_line"] = macd_line
             df["macd_signal"] = macd_signal
-            df["sma20"] = sma(df["close"], 20)
+            df["sma20"] = sma(df["close"], settings.sma_exit)
             df["bearish_pattern"] = False
             return df.tail(lookback)
         raise NotImplementedError
