@@ -5,7 +5,10 @@ from __future__ import annotations
 import os
 from typing import Optional
 
-import requests
+try:  # pragma: no cover - optional dependency
+    import requests  # type: ignore
+except Exception:  # pragma: no cover - fallback when requests missing
+    from . import requests_stub as requests  # type: ignore
 
 
 def send_pushover(message: str, title: str = "Bot Alert") -> None:
