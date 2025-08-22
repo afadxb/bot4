@@ -25,8 +25,7 @@ cp .env.example .env
 
 Configure the `.env` then launch the Interactive Brokers TWS/Gateway. The default configuration uses SQLite; switch `DB_URL` to a MySQL URL if desired. Set `DEBUG=1` in the `.env` to enable verbose logging during development.
 
-Market data is retrieved from Yahoo Finance so no additional data service
-credentials are required.
+Market data and order routing are handled through Interactive Brokers. The project ships with a lightweight Yahoo Finance fallback for offline testing, but production runs expect a running TWS/Gateway instance.
 
 ## Universe
 
@@ -56,10 +55,10 @@ python -m backtest.engine
 
 ## Safety
 
-The project is paper-trade ready. Review code and run in a simulated account before any live deployment.
+The project is configured for live trading by default. Thoroughly test and understand the code before running it against real funds.
 
 ## Troubleshooting
 
 * Ensure TWS/Gateway is running and API is enabled.
 * Check time zone alignment and market hours.
-* Beware IBKR pacing limits when requesting large amounts of data.
+* The bot throttles requests to stay within [IBKR's historical data pacing limits](https://interactivebrokers.github.io/tws-api/historical_limitations.html).

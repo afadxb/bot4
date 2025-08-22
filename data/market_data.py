@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Protocol
+
+from collections import deque
+import time
 
 import pandas as pd
 
@@ -56,6 +59,8 @@ class IBKRMarketData:
     # builds, etc.) we store ``None`` by default and lazily create the ``IB``
     # client in :meth:`__post_init__` when the real library is available.
     ib: IB | None = None
+    _recent: deque[float] = field(default_factory=lambda: deque(maxlen=6), init=False, repr=False)
+    _history: deque[float] = field(default_factory=deque, init=False, repr=False)
 
     def __post_init__(self) -> None:  # pragma: no cover - network
         if IB is None:
@@ -89,6 +94,7 @@ class IBKRMarketData:
 
     # -- internal helpers -------------------------------------------------
     def _download(self, symbol: str, duration: str, bar_size: str) -> pd.DataFrame:
+        self._throttle()
         logger.debug("Downloading bars", symbol=symbol, duration=duration, bar_size=bar_size)
         contract = Stock(symbol, "SMART", "USD")
         bars = self.ib.reqHistoricalData(
@@ -103,6 +109,42 @@ class IBKRMarketData:
         df = df.rename(columns=str.lower)
         df = df[["open", "high", "low", "close", "volume"]]
         return df.dropna()
+
+    def _throttle(self) -> None:
+        """Pause to respect IBKR historical data pacing limits.
+
+        IBKR allows up to 6 historical data requests within any 2 second
+        window and 60 requests within 10 minutes.  Requests beyond these
+        thresholds trigger a pacing violation resulting in a blocked
+        connection.  This helper tracks recent request timestamps and sleeps
+        as necessary to stay within the documented limits.
+        """
+
+        now = time.monotonic()
+
+        # Trim old timestamps from the short (2s) window
+        while self._recent and now - self._recent[0] > 2:
+            self._recent.popleft()
+
+        # Trim old timestamps from the long (10m) window
+        while self._history and now - self._history[0] > 600:
+            self._history.popleft()
+
+        # Determine required sleep to satisfy both limits
+        sleep_for = 0.0
+        if len(self._recent) >= 6:
+            sleep_for = max(sleep_for, 2 - (now - self._recent[0]))
+        if len(self._history) >= 60:
+            sleep_for = max(sleep_for, 600 - (now - self._history[0]))
+
+        if sleep_for > 0:
+            logger.debug("Throttling IBKR request", sleep=sleep_for)
+            time.sleep(sleep_for)
+            now = time.monotonic()
+
+        # Record timestamp for this request
+        self._recent.append(now)
+        self._history.append(now)
 
     def get_bars(self, symbol: str, tf: str, lookback: int) -> pd.DataFrame:
         """Fetch price bars and compute indicators for ``symbol``.

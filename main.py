@@ -17,7 +17,7 @@ from loguru import logger
 
 from scheduler import Scheduler
 from universe import load_universe
-from data.market_data import MarketData, YFinanceMarketData
+from data.market_data import MarketData, IBKRMarketData
 from exec.broker import Broker, Order, IBKRBroker
 from exec.orders import build_bracket
 from exec.state import PositionState, next_state
@@ -123,7 +123,7 @@ def main() -> None:  # pragma: no cover - runtime entry
     universe = load_universe()
     logger.info("Loaded universe", count=len(universe))
 
-    market_data = YFinanceMarketData()
+    market_data = IBKRMarketData()
     broker = IBKRBroker()
     bot = TradingBot(market_data, broker)
 
