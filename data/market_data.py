@@ -151,8 +151,22 @@ class IBKRMarketData:
         df = self.get_bars(symbol, "D", 1)
         return float(df["close"].iloc[-1])
 
-    def get_vix(self) -> float:  # pragma: no cover - stub
-        raise NotImplementedError
+    def get_vix(self) -> float:
+        """Return the latest VIX value.
 
-    def get_reference_symbol(self) -> str:  # pragma: no cover - stub
+        The VIX is retrieved as the last closing price of the CBOE Volatility
+        Index.  Only a single day of data is required so a short download
+        window keeps the request lightweight.
+        """
+
+        df = self._download("VIX", "5 D", "1 day")
+        return float(df["close"].iloc[-1])
+
+    def get_reference_symbol(self) -> str:
+        """Symbol used as the market reference for regime detection.
+
+        ``SPY`` – the S&P 500 ETF – acts as a broad market benchmark and is
+        used by the scoring modules when assessing overall market regime.
+        """
+
         return "SPY"
