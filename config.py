@@ -31,7 +31,7 @@ def _getenv(name: str, default):
 @dataclass(frozen=True)
 class Settings:
     ib_host: str = _getenv("IB_HOST", "127.0.0.1")
-    ib_port: int = _getenv("IB_PORT", 7497)
+    ib_port: int = _getenv("IB_PORT", 7496)
     ib_client_id: int = _getenv("IB_CLIENT_ID", 42)
     ib_account_id: str | None = os.getenv("IB_ACCOUNT_ID")
 
