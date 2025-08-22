@@ -37,7 +37,6 @@ if "PYTEST_CURRENT_TEST" not in os.environ and "pytest" not in sys.modules:  # p
                 sys.modules[__name__] = module
                 break
 
-
 if "DataFrame" not in globals():
 
     class Series(list):
@@ -74,7 +73,6 @@ if "DataFrame" not in globals():
                 else:
                     result.append(self[i] - self[i - periods])
             return Series(result)
-
 
     class DataFrame:
         """Very small subset of :class:`pandas.DataFrame`."""
